@@ -1,0 +1,10 @@
+#Snowflake Credentials
+user: MREAY
+account:
+warehouse:
+role:
+authenticator:
+
+root_sql_directory:
+change_log_directory:
+master_change_log_name:
