@@ -1,4 +1,5 @@
-from core import manifest_reader as filereader, snowflake_manager as sfm
+from core import snowflake_manager as sfm
+from operators import manifest_operator as filereader
 from pathlib import Path
 import datetime
 import logging.config

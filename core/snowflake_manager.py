@@ -1,4 +1,4 @@
-from connectors import snowflake_connector as sfc
+from hooks import snowflake_hook as sfc
 import datetime
 import logging
 from snowflake.connector.errors import DatabaseError, ProgrammingError
