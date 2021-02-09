@@ -1,5 +1,4 @@
-from core import snowflake_manager as sfm
-from operators import manifest_operator as filereader
+from operators import manifest_reader as filereader, snowflake_operator as sfm
 from pathlib import Path
 import datetime
 import logging.config
@@ -49,10 +48,10 @@ class DeployChanges(object):
         :param target_database: Target database for release
         :param properties: Dictionary of teh properties yaml file
         """
-        sf = sfm.SnowflakeManager(conn=sfm.get_conn(properties),
-                                  target_database=target_database,
-                                  history_schema=properties.get('history_schema'),
-                                  history_table=properties.get('history_table'))
+        sf = sfm.SnowflakeOperator(conn=sfm.get_conn(properties),
+                                   target_database=target_database,
+                                   history_schema=properties.get('history_schema'),
+                                   history_table=properties.get('history_table'))
         return sf
 
     def _deployable_changes(self):

@@ -2,14 +2,26 @@ from hooks import snowflake_hook as sfc
 import datetime
 import logging
 from snowflake.connector.errors import DatabaseError, ProgrammingError
+from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger(__name__)
 
+file_loader = FileSystemLoader(searchpath='sql')
+j2_env = Environment(loader=file_loader)
 
-class SnowflakeManager:
+
+def get_rendered_template(template, records):
+    """
+
+    """
+    return j2_env.get_template(template).render(records=records)
+
+
+class SnowflakeOperator:
     """
     Manages interactions with Snowflake
     """
+
     def __init__(self, conn, target_database, history_schema, history_table):
         self.history_schema = history_schema
         self.history_table = history_table
@@ -29,17 +41,37 @@ class SnowflakeManager:
         conn = sfc.SnowflakeConnection(kwargs)
         return conn
 
-    def _execute_sql(self, sql):
+    @staticmethod
+    def _execute_sql(conn, sql):
         try:
-            return self.conn.cursor().execute(sql)
+            return conn.cursor().execute(sql)
         except ProgrammingError as e:
             logger.error(e)
-            self.database_error = 1
         except DatabaseError as e:
             logger.error(e)
-            self.database_error = 1
         except Exception as e:
             raise e
+
+    @staticmethod
+    def _execute_string(conn, sql):
+        try:
+            return conn.cursor().execute_string(sql)
+        except ProgrammingError as e:
+            logger.error(e)
+        except DatabaseError as e:
+            logger.error(e)
+        except Exception as e:
+            raise e
+
+    @staticmethod
+    def clone_database(conn, target_database):
+        """
+        Clones a target database
+        :param conn:
+        :param target_database:
+        """
+        # TODO implement clone
+        pass
 
     def get_database_change_history(self):
         """
@@ -67,24 +99,28 @@ class SnowflakeManager:
         :param kwargs: Change metadata
         :return: True is successful, false is change id found in history
         """
-        sql = f"INSERT INTO {self.deploy_database_name}.{self.history_schema}.{self.history_table} " \
-              f"(id, author, filename, date_released, change_log, jira_number, release_number, comments, " \
-              f"deployment_id, status) " \
-              f"VALUES(\'{kwargs.get('id')}\'," \
-              f"\'{kwargs.get('author')}\'," \
-              f"\'{kwargs.get('filename')}\'," \
-              f"\'{kwargs.get('date_released')}\'," \
-              f"\'{kwargs.get('change_log')}\'," \
-              f"\'{kwargs.get('jira_number')}\'," \
-              f"\'{kwargs.get('release_number')}\','" \
-              f"\'{kwargs.get('comments')}\'," \
-              f"\'{kwargs.get('deployment_id')}\'," \
-              f"\'{kwargs.get('status')}\'" \
-              f")"
+        # sql = f"INSERT INTO {self.deploy_database_name}.{self.history_schema}.{self.history_table} " \
+        #       f"(id, author, filename, date_released, change_log, jira_number, release_number, comments, " \
+        #       f"deployment_id, status) " \
+        #       f"VALUES(\'{kwargs.get('id')}\'," \
+        #       f"\'{kwargs.get('author')}\'," \
+        #       f"\'{kwargs.get('filename')}\'," \
+        #       f"\'{kwargs.get('date_released')}\'," \
+        #       f"\'{kwargs.get('change_log')}\'," \
+        #       f"\'{kwargs.get('jira_number')}\'," \
+        #       f"\'{kwargs.get('release_number')}\','" \
+        #       f"\'{kwargs.get('comments')}\'," \
+        #       f"\'{kwargs.get('deployment_id')}\'," \
+        #       f"\'{kwargs.get('status')}\'" \
+        #       f")"
+
+        template = 'insert_into_release_log_history_table.j2'
+
         try:
             # Checks if the change id is already in the database
             if self._check_id_is_valid(kwargs.get('id')):
-                self._execute_sql(sql)
+                sql = get_rendered_template(template=template, records=kwargs)
+                self._execute_sql(conn=self.conn, sql=sql)
                 return True
             else:
                 return False
@@ -100,7 +136,6 @@ class SnowflakeManager:
             elif x[0] == id and x[9] == 'failed':
                 logger.info(f"Change ID {id} was a failed release to this database, re-trying release")
                 is_valid = True
-
         return is_valid
 
     def deploy_change_to_target(self, sqlfile: str, author: str, id: str, database: str = None):
@@ -139,7 +174,7 @@ class SnowflakeManager:
     @staticmethod
     def get_change_details(sqlfile: str, date_released: datetime, change_log: str):
         """
-        Reads the chnage metadata from a SQL change file
+        Reads the change metadata from a SQL change file
         :param sqlfile: File to release
         :param date_released: release timestamp
         :param change_log: Parent manifest file
@@ -178,14 +213,6 @@ class SnowflakeManager:
                 change_details['jira_number'] = jira
 
         return change_details
-
-    def clone_database(self, target_database):
-        """
-        Clones a target database
-        :param target_database:
-        """
-        #TODO implement clone
-        pass
 
     def swap_database(self, cloned_db_name: str, target_db_name: str):
         """

@@ -1,4 +1,4 @@
-{% for record in manifest -%}
+{% for record in records -%}
 INSERT INTO {{ record.deploy_database_name}}.{{record.release_history_schema}}.{{self.release_history_table}}
               (change_id, created_by, sql_manifest_file_location, release_date,
                 feature_id, status, tag) 
