@@ -5,6 +5,11 @@ warehouse:
 role:
 authenticator:
 
+# change log and SQL directory locations
 root_sql_directory:
 change_log_directory:
 master_change_log_name:
+
+# Database change tracking
+history_schema: HISTORY_SCHEMA
+history_table: HISTORY_TABLE

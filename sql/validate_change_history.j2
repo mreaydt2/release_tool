@@ -1,0 +1,4 @@
+select count(1) from {database}.INFORMATION_SCHEMA.TABLES
+WHERE table_catalog = '{database}'
+AND table_schema = '{self.history_schema}'
+AND table_schema = '{self.history_table}'

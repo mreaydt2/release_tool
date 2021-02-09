@@ -2,7 +2,7 @@
 
 import sys, getopt
 from pathlib import Path
-from core import properties as prop, deploy
+from core import properties_reader as prop, deploy_changes
 
 def main(argv):
     help = "-t, --tgt      Target Database Name\n" \

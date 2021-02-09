@@ -6,7 +6,9 @@ from cryptography.hazmat.primitives import serialization
 
 
 class SnowflakeConnection:
-
+    """
+    Interact with Snowflake.
+    """
     def __init__(self, **kwargs):
         self.user = kwargs.get("user")
         self.password = kwargs.get("password")
@@ -19,6 +21,9 @@ class SnowflakeConnection:
         self.private_key = ''
 
     def _get_conn_params(self):
+        """
+        one method to fetch connection params as a dict
+        """
         conn_config = {
             "user": self.user,
             "password": self.password or '',
@@ -57,16 +62,10 @@ class SnowflakeConnection:
     def get_conn(self):
         """
         Returns a snowflake.connection object
-        :return: snowflake.connection object
         """
         conn_config = self._get_conn_params()
         conn = snowflake.connector.connect(**conn_config)
         return conn
 
     def set_autocommit(self, conn, autocommit):
-        """
-
-        :param conn:
-        :param autocommit:
-        """
         conn.autocommit(autocommit)

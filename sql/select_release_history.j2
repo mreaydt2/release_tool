@@ -1,0 +1,9 @@
+SELECT
+change_id,
+created_by,
+sql_manifest_file_location,
+release_date,
+feature_id,
+status,
+tag
+FROM {{ release_history_schema }}.{{ release_history_table }}

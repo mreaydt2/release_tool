@@ -1,0 +1,10 @@
+CREATE TABLE {{ release_history_schema }}.{{ release_history_table }}
+(
+change_id varchar(1000) not null,
+created_by varchar(255) not null,
+sql_manifest_file_location varchar(1000) not null,
+release_date timestamp_ntz not null,
+feature_id varchar(255) comment = "JIRA number for example",
+status varchar(255) not null comment = ,
+tag varchar(255)
+);
